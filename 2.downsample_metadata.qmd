@@ -1,0 +1,62 @@
+---
+title: "Downsample Mouse Whole Brain Atlas Metadata"
+date: today
+execute: 
+  message: false
+  warning: false
+embed-resources: true
+format: html
+---
+
+
+```{r}
+library (tidyverse)
+
+md <- read_csv("abc_data/metadata/WMB-10X/20241115/cell_metadata.csv")
+```
+
+
+[10x RNA-seq clustering analysis and annotation (CCN20230722)](https://alleninstitute.github.io/abc_atlas_access/notebooks/cluster_annotation_tutorial.html)
+
+The Mouse Whole Brain Atlas is a high-resolution transcriptomic and spatial cell-type atlas across the entire mouse brain, integrating several whole-brain single-cell RNA-sequencing (scRNA-seq) datasets. The datasets contain a total o `r nrow(md)` cells in `r n_distinct(md$cluster_alias)` clusters.
+
+```{r}
+clusters <- md |>
+    group_by(cluster_alias) |>
+    summarize(n_cells = n()) 
+
+ggplot(clusters, aes(log10(n_cells))) +
+  labs(x = "\nLog10(Number of cells per cluster)", y = "Number of clusters\n", title = "Cells per cluster") +
+    geom_histogram()+
+    theme_minimal()
+
+```
+
+#### Sample 200,000 cells, ensuring all clusters with fewer than 50 cells are included
+
+Run the following code to downsample the metadata to 200,000 cells, ensuring that all clusters with fewer than 50 cells are included in the sample. 
+
+Change `200000` to your desired number of cells if needed. Idem for the `50` threshold. 
+
+```{r}
+
+# keep all cells from clusters with fewer than 50 cells
+small_clusters <- md |> 
+  semi_join(clusters |> filter(n_cells < 50), by = "cluster_alias")
+
+set.seed(42)
+# sample remaining cells from larger clusters
+large_clusters <- md |> 
+  anti_join(clusters |> filter(n_cells < 50), by = "cluster_alias") |> 
+  slice_sample(n = 200000 - nrow(small_clusters))
+
+# combine the two sets of cells
+downsampled_cells <- bind_rows(small_clusters, large_clusters)
+
+# desanotated write_csv to save the downsampled metadata
+# write_csv (downsampled_cells, "data/downsampled_cells.csv")
+```
+
+`r nrow(small_clusters)` cells from `r nrow(clusters |> filter(n_cells < 50))`clusters with fewer than 50 cells were included in the sample without sampling.
+The remaining `r nrow(large_clusters)` cells were randomly sampled from the rest of larger clusters to reach a total of 200,000 cells.
+
