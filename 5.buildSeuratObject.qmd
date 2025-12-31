@@ -1,0 +1,73 @@
+---
+title: "Downsampled anndata object"
+subtitle: "anndata to seurat conversion"
+date: last-modified
+execute: 
+  mesage: false
+  warning: false
+format: html
+---
+
+
+```{r}
+library(Seurat)
+library(tidyverse)
+library(Matrix)
+library(qs2)
+
+
+#### metadata from the entire Allen´s WMB-10x atlas
+
+allen_cell_meta <- read.csv('abc_data/metadata/WMB-10X/20241115/cell_metadata.csv')
+allen_gene_meta <- read.csv('abc_data/metadata/WMB-10X/20241115/gene.csv')
+
+
+## mtx data from anndata export
+# Read the sparse matrix
+sparse_mat <- readMM('data/mtx/expression_matrix.mtx')
+
+# Read cell and gene names
+barcodes <- read.table('data/mtx/barcodes.tsv', header=FALSE, stringsAsFactors=FALSE) 
+features <- read.table('data/mtx/features.tsv', header=FALSE, stringsAsFactors=FALSE)
+
+# Assign names
+rownames(sparse_mat) <- barcodes$V1
+colnames(sparse_mat) <- features$V1
+
+# Read metadata
+cell_meta <- read_csv('data/mtx/cell_metadata.csv') |> 
+    select(-c(cell_barcode,library_label)) |>
+    left_join(allen_cell_meta,by = "cell_label") |> 
+    column_to_rownames(var = "cell_label")
+
+gene_meta <- read.csv('data/mtx/gene_metadata.csv') |> 
+    left_join(allen_gene_meta,by= "gene_identifier") |> 
+    column_to_rownames(var = "gene_identifier")
+
+# Make sure the rownames match
+identical(features$V1, rownames(gene_meta)) # TRUE
+identical(barcodes$V1, rownames(cell_meta)) # TRUE
+
+# Check dimensions
+dim(sparse_mat)
+
+# Create Seurat object
+allen10X_down200k <- CreateSeuratObject(counts = t(sparse_mat),
+                                      meta.data = cell_meta,
+                                      project = "Allen_WMB_10X_downsampled200k",
+                                      min.cells = 0,
+                                      min.features = 0,
+                                      )
+
+
+# Add gene metadata
+allen10X_down200k[["RNA"]] <- AddMetaData(
+    object = allen10X_down200k[["RNA"]],
+    metadata = gene_meta)           
+
+# access gene metadata
+ # allen10X_down200k[["RNA"]][[]]
+
+# Save Seurat object
+qs_save(allen10X_down200k,file = "data/allen10X_down200k_seurat.qs")        
+```
