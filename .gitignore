@@ -1,6 +1,6 @@
 abc_data/*
 !abc_data/.gitkeep
-CLAUDE.md
 .DS_Store
 20251201_tutorial_completo.ipynb
-data/downsampled_expression.h5ad
+data/*
+!data/downsampled_cells.csv
