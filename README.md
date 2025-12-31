@@ -30,3 +30,13 @@ This Quarto document executes the cell selection logic using R. Because the comp
 **File:** `3.Download_expression _matrices.ipynb`
 
 This script generates the final biological dataset. It reads the list of target cells generated in the previous step and identifies the specific raw expression matrices required (spanning 10Xv2, 10Xv3, and 10XMulti modalities). The code downloads and saves these matrices and then, subsets them in memory immediately to discard unneeded data. It then concatenates the results into a single `AnnData` object, which is saved locally as `downsampled_expression.h5ad` for downstream analysis.
+
+### 🔍 4. Quality Control and Format Conversion
+**File:** `4.inspect_downsampledAnndata.ipynb`
+
+This notebook performs comprehensive quality control analysis on the generated AnnData object using scanpy. It inspects the object structure, calculates cell-level QC metrics including genes per cell and UMI count distributions, and validates data integrity. The script then exports the expression matrix to Matrix Market format (.mtx) along with corresponding barcode and feature tables. This conversion enables interoperability with R-based analysis tools, producing `expression_matrix.mtx`, `barcodes.tsv`, `features.tsv`, and associated metadata files in the `data/mtx/` directory.
+
+### 🔬 5. Seurat Object Construction
+**File:** `5.buildSeuratObject.qmd`
+
+This Quarto document transitions the workflow into the R ecosystem by constructing a Seurat object from the exported Matrix Market files. It reads the sparse expression matrix and rejoins the downsampled cells with the complete Allen Atlas metadata to restore full cluster annotations, anatomical labels, and experimental details. The resulting Seurat object integrates both gene-level and cell-level metadata and is serialized using the `qs2` package for efficient storage and rapid loading in subsequent R analyses. The final object is saved as `data/allen10X_down200k_seurat.qs`.
