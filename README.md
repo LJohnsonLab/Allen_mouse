@@ -1,6 +1,6 @@
 # Allen Mouse Brain Cell Atlas: Data Acquisition and Downsampling Tutorial
 
-This repository provides a structured workflow for accessing and managing large-scale data from the 10x Mouse Whole Brain Atlas  ([CCN20230722](https://alleninstitute.github.io/abc_atlas_access/notebooks/cluster_annotation_tutorial.html)). The objective is to generate a manageable dataset that preserves biological diversity by retaining rare cell clusters while reducing the footprint of common cell types. The pipeline utilizes Python for data retrieval and R for statistical sampling.
+This repository provides a structured workflow for accessing and managing large-scale data from the 10x Mouse Whole Brain Atlas  ([CCN20230722](https://alleninstitute.github.io/abc_atlas_access/notebooks/cluster_annotation_tutorial.html)). The objective is to generate a manageable dataset (`anndata` and `seurat` objects) that preserves biological diversity by retaining rare cell clusters while reducing the footprint of common cell types. The pipeline utilizes Python for data retrieval and R for statistical sampling.
 
 ## Project Structure
 
@@ -9,6 +9,8 @@ The workflow operates on the following directory structure:
 * `1.programatic_access.ipynb`: Initial setup and metadata retrieval.
 * `2.downsample_metadata.qmd`: Statistical analysis and cell selection.
 * `3.Download_expression _matrices.ipynb`: Matrix acquisition and object generation.
+* `4.inspect_downsampledAnndata.ipynb`: Quality control and format conversion.
+* `5.buildSeuratObject.qmd`: Seurat object construction.
 * `data/`: Storage for the downsampled cell list and final AnnData object.
 * `abc_data/`: Local cache directory for raw Allen Atlas data.
 
